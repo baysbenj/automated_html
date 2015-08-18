@@ -1,0 +1,18 @@
+
+
+# vim files
+*~
+*.swp
+
+# intellij files
+*.iws
+*.iml
+*.ipr
+*/*.iws
+*/*.ipr
+.idea/*
+
+# Mac files
+.DS_Store
+.AppleDouble
+.LSOverride

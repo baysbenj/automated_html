@@ -1,0 +1,92 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "A simple ec2 instance",
+  "Parameters":{
+    "InstanceType":{
+      "Description":"Size of the ec2 instance to launch",
+      "Type":"String",
+      "Default":"t1.micro",
+      "AllowedValues":[
+        "t1.micro",
+        "m1.small",
+        "m1.medium",
+        "m3.medium"
+      ]
+    },
+    "PublicIp":{
+      "Type":"String",
+      "Description":"Public IP used to open up inbound connections over ssh port 22",
+      "AllowedPattern": "\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}",
+      "ConstraintDescription": "Must be a valid IP Address of the form x.x.x.x"
+    },
+    "SshKeypairName":{
+      "Type":"AWS::EC2::KeyPair::KeyName",
+      "Description":"The name of the ssh keypair to use when botting ec2 instance"
+    }
+  },
+  "Mappings": {
+    "InstanceTypeToArch": { 
+      "t1.micro":   { "Arch": "PV64" },
+      "m1.small":   { "Arch": "PV64" },
+      "m1.medium":  { "Arch": "PV64" },
+      "m3.medium":  { "Arch": "HVM64"}
+    },
+    "RegionArchToAmi": {
+      "us-east-1": {
+        "PV64":   "ami-1ccae774",
+        "HVM64":  "ami-1ecae776",
+        "HVMG2":  "ami-8c6b40e4"
+      },
+      "us-west-2": {
+        "PV64":   "ami-ff527ecf",
+        "HVM64":  "ami-e7527ed7",
+        "HVMG2":  "ami-abbe919b"
+      },
+      "us-west-1": {
+        "PV64":   "ami-d514f291",
+        "HVM64":  "ami-d114f295",
+        "HVMG2":  "ami-f31ffeb7"
+      }
+    }
+  },
+  "Resources":{
+    "MySecurityGroup": {
+      "Type":"AWS::EC2::SecurityGroup",
+      "Properties":{
+        "GroupDescription":"Simple security group to enable ssh (chef) and port 80 (nginx)",
+        "SecurityGroupIngress":[
+          { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": { "Fn::Join": [ "/", [{"Ref": "PublicIp"}, "32"] ] }},
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort":"80", "CidrIp": "0.0.0.0/0"}
+        ],
+        "Tags": [
+          { "Key":"Author",      "Value": "baysbenj@gmail.com" }
+        ]
+      }
+    },
+    "MyEc2Instance":{
+      "Type":"AWS::EC2::Instance",
+      "Properties":{
+        "ImageId": {
+          "Fn::FindInMap":[
+            "RegionArchToAmi",
+            { "Ref": "AWS::Region" },
+            { "Fn::FindInMap": [ "InstanceTypeToArch", {"Ref":"InstanceType"}, "Arch" ] }
+          ]
+        },
+        "InstanceType": {"Ref":"InstanceType"},
+        "KeyName": {"Ref":"SshKeypairName"},
+        "SecurityGroups":[{"Ref":"MySecurityGroup"}]
+      }
+    }
+  },
+  "Outputs":{
+    "InstanceId":{
+      "Description":"AWS Assigned Instance ID of the EC2 instance",
+      "Value":{ "Ref":"MyEc2Instance" }
+    },
+    "PublicIp":{
+      "Description":"Public IPv4 address of the ec2 instance",
+      "Value":{ "Fn::GetAtt":[ "MyEc2Instance", "PublicIp"] }
+    }
+  }
+}
