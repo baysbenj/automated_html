@@ -35,7 +35,7 @@ The script requires the following options:
 5. instance\_type:  Which AWS instance type you'd like to use.  Only free and small instances are supported, such as t1.micro, m1.small, m3.small, etc.  t2 is not supported, as it is only available in VPC and this script uses EC2 classic.
 6. stack\_name: What to name your aws cloudformation stack.  Must be unique to among any other stacks you have deployed.
 
-    bundle exec ruby deploy.rb -k <ssh_keypair_name> [-f <private_ssh_key> -i <your_public_ip> -r <aws_region> -t <instance_type> -s <stack_name>
+    bundle exec ruby deploy.rb -k <ssh_keypair_name> [-f <private_ssh_key>] -i <your_public_ip> -r <aws_region> -t <instance_type> -s <stack_name>
 
 Example usage:
 
