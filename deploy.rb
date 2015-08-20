@@ -48,11 +48,7 @@ bootstrap_instance(
   ec2_instance_id, 
   options[:keypair_file])
 
-puts "Your public IP is: #{ec2_public_ip}"
-
-# super simple test until I get cucumber setup
-smoke_test = system "curl -X GET http://#{ec2_public_ip} | grep 'Automation for the people'"
-puts "Page Test Result: #{ smoke_test ? 'PASS' : 'FAIL'}"
+puts "Your EC2 public IP is: #{ec2_public_ip}"
 
 BEGIN {
 
@@ -178,10 +174,10 @@ BEGIN {
         raise "Expected exactly one EC2 instance with id #{instance_id}"
       end
 
-      instance_status = resp.instance_statuses.first
+      status_obj = resp.instance_statuses.first
 
-      system_status = instance_status.system_status.status
-      instance_status = instance_status.instance_status.status
+      system_status = status_obj.system_status.status
+      instance_status = status_obj.instance_status.status
       if system_status=='ok' && instance_status=='ok'
         return true
       end

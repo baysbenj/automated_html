@@ -41,3 +41,9 @@ Example usage:
 
     bundle exec ruby deploy.rb -k my_keypair -i 173.74.63.254 -r us-east-1 -t t1.micro -s test1
   
+
+# Run the cucumber tests
+
+The cucumber tests require two additional environment variables.  You can set this manually on the command line or in your in your .bashrc.  Example usage is shown below, setting the env variables on the command line.
+
+    STACK_NAME='test1' AWS_REGION='us-east-1' bundle exec cucumber
