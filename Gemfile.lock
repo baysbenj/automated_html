@@ -62,6 +62,10 @@ GEM
     ipaddress (0.8.0)
     jmespath (1.0.2)
       multi_json (~> 1.0)
+    knife-solo (0.4.2)
+      chef (>= 10.12)
+      erubis (~> 2.7.0)
+      net-ssh (>= 2.2.2, < 3.0)
     libyajl2 (1.2.0)
     method_source (0.8.2)
     mime-types (2.6.1)
@@ -120,14 +124,14 @@ GEM
     rspec_junit_formatter (0.2.3)
       builder (< 4)
       rspec-core (>= 2, < 4, != 2.12.0)
-    serverspec (2.21.0)
+    serverspec (2.21.1)
       multi_json
       rspec (~> 3.0)
       rspec-its
       specinfra (~> 2.38)
     sfl (2.2)
     slop (3.6.0)
-    specinfra (2.40.2)
+    specinfra (2.41.1)
       net-scp
       net-ssh (~> 2.7)
       net-telnet
@@ -144,6 +148,7 @@ DEPENDENCIES
   aws-sdk (= 2.1.14)
   chef (= 12.4.1)
   cucumber (= 2.0.2)
+  knife-solo (= 0.4.2)
   rake (= 10.4.2)
   rspec (= 3.3.0)
 

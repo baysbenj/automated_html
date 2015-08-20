@@ -41,6 +41,18 @@ puts "Found EC2 instance with id #{ec2_instance_id}"
 # wait for the ec2 instance to be in a ready state
 wait_for_ec2_instance_ready_state(ec2_instance_id)
 
+# install chef and run our mini cookbook
+ec2_public_ip = get_ec2_instance_ip(stack_name)
+bootstrap_instance(
+  ec2_public_ip, 
+  ec2_instance_id, 
+  options[:keypair_file])
+
+puts "Your public IP is: #{ec2_public_ip}"
+
+# super simple test until I get cucumber setup
+smoke_test = system "curl -X GET http://#{ec2_public_ip} | grep 'Automation for the people'"
+puts "Page Test Result: #{ smoke_test ? 'PASS' : 'FAIL'}"
 
 BEGIN {
 
@@ -58,7 +70,6 @@ BEGIN {
   def create_stack(stack_name, template, instance_type, public_ip, key_pair_name)
 
     params = {
-        InstanceType:     instance_type,
         PublicIp:         public_ip,
         SshKeypairName:   key_pair_name
     }
@@ -139,9 +150,16 @@ BEGIN {
   # @return [String] EC2 instance id of the form 'i-xxxxxxxx'
   def get_ec2_instance_id(stack_name)
     stack_desc = get_stack_desc(stack_name)
-
     stack_outputs = stack_desc.outputs.select { |o| o.output_key=='InstanceId' }
+    stack_outputs.first.output_value
+  end
 
+  ##
+  # @param [String] Cloudformation stack name
+  # @return [String] EC2 public ip address
+  def get_ec2_instance_ip(stack_name)
+    stack_desc = get_stack_desc(stack_name)
+    stack_outputs = stack_desc.outputs.select { |o| o.output_key=='PublicIp' }
     stack_outputs.first.output_value
   end
 
@@ -221,6 +239,27 @@ BEGIN {
     end
 
     options
+  end
+
+  ##
+  # @param instance_ip [String] public ip address of the ec2 instance we're bootstrapping
+  # @param instance_id [String] Name of the ec2 instance (used to name chef node)
+  # @param ssh_key_file [String] optional file path to the ssh_key.  If not available, asssume ssh daemon.
+  def bootstrap_instance(instance_ip, instance_id, ssh_key_file=nil)
+
+    Dir.chdir('knife-solo') do
+      solo_cmd = "knife solo bootstrap ec2-user@#{instance_ip} nodes/welcome_page.json"
+
+      # optional, they might be using an ssh daemon
+      unless ssh_key_file.nil?
+        solo_cmd += " -i #{ssh_key_file}"
+      end
+
+      puts "Executing: (#{solo_cmd})"
+      success = system solo_cmd
+      exit unless success
+    end
+    
   end
 
 }
